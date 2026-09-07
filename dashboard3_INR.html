@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Film Forte - Operations & Yield Control Center</title>
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0f3ff',
+                            100: '#e0e7ff',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                            900: '#312e81',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Lucide Icons & Chart.js -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #475569;
+        }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 font-sans antialiased min-h-screen flex flex-col selection:bg-indigo-500 selection:text-white">
+
+    <!-- Global Header -->
+    <header class="border-b border-slate-800 bg-slate-900/90 backdrop-blur sticky top-0 z-50">
+        <div class="max-w-[1700px] mx-auto px-6 h-16 flex items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+                <div class="p-2 bg-indigo-600/20 text-indigo-400 rounded-lg border border-indigo-500/30">
+                    <i data-lucide="clapperboard" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <h1 class="font-bold text-lg leading-tight tracking-tight">Film Forte Multiplex</h1>
+                        <span class="text-[10px] font-semibold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 px-2 py-0.5 rounded-full uppercase">Metro Mall</span>
+                    </div>
+                    <p class="text-xs text-slate-400">Operations & Yield Control Center</p>
+                </div>
+            </div>
+
+            <div class="hidden xl:flex items-center gap-8 border-x border-slate-800/80 px-8 py-1">
+                <div class="flex items-center gap-3">
+                    <div class="p-2 rounded-md bg-emerald-500/10 text-emerald-400">
+                        <i data-lucide="users" class="w-4 h-4"></i>
+                    </div>
+                    <div>
+                        <div class="text-[11px] text-slate-400 font-medium">Daily Footfall</div>
+                        <div class="text-base font-bold text-slate-100">4,280 <span class="text-xs font-normal text-emerald-400 ml-1">+12.4%</span></div>
+                    </div>
+                </div>
+                <div class="flex items-center gap-3">
+                    <div class="p-2 rounded-md bg-indigo-500/10 text-indigo-400">
+                        <i data-lucide="pie-chart" class="w-4 h-4"></i>
+                    </div>
+                    <div>
+                        <div class="text-[11px] text-slate-400 font-medium">Avg Occupancy</div>
+                        <div class="text-base font-bold text-slate-100">78.4%</div>
+                    </div>
+                </div>
+                <div class="flex items-center gap-3">
+                    <div class="p-2 rounded-md bg-amber-500/10 text-amber-400">
+                        <i data-lucide="badge-indian-rupee" class="w-4 h-4"></i>
+                    </div>
+                    <div>
+                        <div class="text-[11px] text-slate-400 font-medium">Pre-Show Ad Yield</div>
+                        <div class="text-base font-bold text-slate-100">₹3,500 / RPM <span class="text-xs font-normal text-amber-400 ml-1">92% Booked</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-4">
+                <div class="hidden sm:flex items-center gap-2 bg-slate-800/80 border border-slate-700/60 px-3 py-1.5 rounded-full text-xs">
+                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <span class="text-slate-300 font-medium">6 / 6 Screens Active</span>
+                </div>
+                <div class="h-8 w-px bg-slate-800 hidden sm:block"></div>
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-full bg-gradient-to-tr from-indigo-600 to-violet-500 text-white flex items-center justify-center font-bold text-sm border border-indigo-400/30">
+                        RM
+                    </div>
+                    <div class="text-left">
+                        <div class="text-xs font-bold leading-tight">Ravi M.</div>
+                        <div class="text-[10px] text-slate-400">Operations Manager</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Viewport -->
+    <main class="flex-1 max-w-[1700px] w-full mx-auto p-4 md:p-6 space-y-6">
+
+        <!-- Metrics Overview -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="bg-slate-900 border border-slate-800/80 rounded-xl p-4 hover:border-slate-700 transition">
+                <div class="flex items-center justify-between text-slate-400 mb-2">
+                    <span class="text-[11px] font-semibold uppercase tracking-wider">Infrastructure</span>
+                    <i data-lucide="monitor" class="w-4 h-4 text-indigo-400"></i>
+                </div>
+                <div class="text-2xl font-extrabold text-white mb-1">6 Audis Live</div>
+                <div class="flex items-center gap-1.5 text-xs text-emerald-400">
+                    <i data-lucide="check-circle-2" class="w-3.5 h-3.5"></i>
+                    <span>All hardware calibrated</span>
+                </div>
+            </div>
+
+            <div class="bg-slate-900 border border-slate-800/80 rounded-xl p-4 hover:border-slate-700 transition">
+                <div class="flex items-center justify-between text-slate-400 mb-2">
+                    <span class="text-[11px] font-semibold uppercase tracking-wider">Dynamic Strategy</span>
+                    <i data-lucide="zap" class="w-4 h-4 text-amber-400"></i>
+                </div>
+                <div class="text-2xl font-extrabold text-white mb-1">Demand Surge</div>
+                <div class="flex items-center gap-1.5 text-xs text-amber-400">
+                    <i data-lucide="trending-up" class="w-3.5 h-3.5"></i>
+                    <span>+15% Active on Audi 1 & 3</span>
+                </div>
+            </div>
+
+            <div class="bg-slate-900 border border-slate-800/80 rounded-xl p-4 hover:border-slate-700 transition">
+                <div class="flex items-center justify-between text-slate-400 mb-2">
+                    <span class="text-[11px] font-semibold uppercase tracking-wider">In-House Ads</span>
+                    <i data-lucide="tv" class="w-4 h-4 text-indigo-400"></i>
+                </div>
+                <div class="text-2xl font-extrabold text-white mb-1">92% Utilized</div>
+                <div class="flex items-center gap-1.5 text-xs text-slate-400">
+                    <i data-lucide="clock" class="w-3.5 h-3.5"></i>
+                    <span>4 pre-show slots unallocated</span>
+                </div>
+            </div>
+
+            <div class="bg-slate-900 border border-slate-800/80 rounded-xl p-4 hover:border-slate-700 transition">
+                <div class="flex items-center justify-between text-slate-400 mb-2">
+                    <span class="text-[11px] font-semibold uppercase tracking-wider">Today's Revenue</span>
+                    <i data-lucide="wallet" class="w-4 h-4 text-emerald-400"></i>
+                </div>
+                <div class="text-2xl font-extrabold text-white mb-1">₹15,22,500</div>
+                <div class="flex items-center gap-1.5 text-xs text-emerald-400">
+                    <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i>
+                    <span>+8.2% vs target forecast</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Deep Dive Interactive Workflow: Dynamic Pricing & Yield Simulator -->
+        <div class="bg-slate-900 border border-slate-800/90 rounded-xl p-5 md:p-6 shadow-xl">
+            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6 border-b border-slate-800 pb-4">
+                <div>
+                    <div class="flex items-center gap-2">
+                        <span class="p-1.5 bg-indigo-500/20 text-indigo-400 rounded-md border border-indigo-500/30">
+                            <i data-lucide="sliders" class="w-4 h-4"></i>
+                        </span>
+                        <h2 class="text-base md:text-lg font-bold text-white">Dynamic Pricing & Demand Strategy Engine</h2>
+                        <span class="text-[11px] font-medium bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 px-2.5 py-0.5 rounded-full">Core Workflow</span>
+                    </div>
+                    <p class="text-xs text-slate-400 mt-1">Adjust demand levels, showtime multipliers, and ad insertions in real-time to maximize showtime yield.</p>
+                </div>
+
+                <div class="flex items-center gap-3 bg-slate-950/80 border border-slate-800 p-1.5 rounded-lg">
+                    <label for="screenSelect" class="text-xs font-medium text-slate-400 pl-2">Select Target Screen:</label>
+                    <select id="screenSelect" onchange="updateWorkflow()" class="bg-slate-800 border border-slate-700 text-slate-100 text-xs font-medium rounded-md px-3 py-1.5 focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                        <option value="1">Audi 1 (IMAX 3D) - Jawan / Blockbuster</option>
+                        <option value="2">Audi 2 (Standard) - Stree 2</option>
+                        <option value="3">Audi 3 (Gold Class VIP) - Kalki 2898 AD</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <!-- Sidebar Controls -->
+                <div class="lg:col-span-4 space-y-5 bg-slate-950/60 p-4 md:p-5 rounded-lg border border-slate-800">
+                    <div class="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-2">
+                        <i data-lucide="settings-2" class="w-3.5 h-3.5 text-indigo-400"></i> Strategy Modifiers
+                    </div>
+
+                    <div>
+                        <div class="flex justify-between text-xs mb-1.5">
+                            <span class="text-slate-400 font-medium">Demand Index Factor</span>
+                            <span id="demandVal" class="text-indigo-400 font-bold">High (85%)</span>
+                        </div>
+                        <input type="range" id="demandSlider" min="10" max="100" value="85" oninput="updateWorkflow()" class="w-full accent-indigo-500 bg-slate-800 h-2 rounded-lg cursor-pointer">
+                    </div>
+
+                    <div>
+                        <div class="flex justify-between text-xs mb-1.5">
+                            <span class="text-slate-400 font-medium">Showtime Multiplier</span>
+                            <span id="peakVal" class="text-amber-400 font-bold">Prime Evening (1.2x)</span>
+                        </div>
+                        <input type="range" id="peakSlider" min="8" max="16" value="12" step="1" oninput="updateWorkflow()" class="w-full accent-amber-500 bg-slate-800 h-2 rounded-lg cursor-pointer">
+                    </div>
+
+                    <div class="space-y-3 pt-3 border-t border-slate-800">
+                        <span class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">Automated Rule Toggles</span>
+                        <label class="flex items-start gap-2.5 text-xs text-slate-300 cursor-pointer select-none">
+                            <input type="checkbox" id="surgeToggle" checked onchange="updateWorkflow()" class="mt-0.5 rounded bg-slate-800 border-slate-700 text-indigo-600 focus:ring-indigo-500 w-4 h-4">
+                            <div>
+                                <span class="font-medium text-slate-200">Enable Automated Surge (+15%)</span>
+                                <p class="text-[10px] text-slate-400">Activates when predicted occupancy passes 80%.</p>
+                            </div>
+                        </label>
+                        <label class="flex items-start gap-2.5 text-xs text-slate-300 cursor-pointer select-none">
+                            <input type="checkbox" id="adToggle" checked onchange="updateWorkflow()" class="mt-0.5 rounded bg-slate-800 border-slate-700 text-indigo-600 focus:ring-indigo-500 w-4 h-4">
+                            <div>
+                                <span class="font-medium text-slate-200">Inject High-Yield Ad Slots</span>
+                                <p class="text-[10px] text-slate-400">Inserts premium pre-show ad inventory during high demand.</p>
+                            </div>
+                        </label>
+                    </div>
+
+                    <div class="bg-gradient-to-br from-indigo-950/40 to-slate-900 border border-indigo-500/30 rounded-lg p-4 space-y-2 mt-4">
+                        <div class="flex justify-between items-center text-xs">
+                            <span class="text-slate-400">Calculated Ticket Price:</span>
+                            <span id="computedPrice" class="font-bold text-slate-100 text-base">₹480.00</span>
+                        </div>
+                        <div class="flex justify-between items-center text-xs">
+                            <span class="text-slate-400">Est. Occupancy:</span>
+                            <span id="computedSeats" class="font-bold text-slate-100">213 / 250 Seats</span>
+                        </div>
+                        <div class="h-px bg-indigo-500/20 my-1"></div>
+                        <div class="flex justify-between items-center text-xs">
+                            <span class="text-slate-300 font-semibold">Projected Show Revenue:</span>
+                            <span id="computedRevenue" class="font-extrabold text-emerald-400 text-base">₹1,27,240</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Yield Chart -->
+                <div class="lg:col-span-8 flex flex-col justify-between space-y-4">
+                    <div class="bg-slate-950/40 p-4 rounded-lg border border-slate-800/80 flex-1 flex flex-col">
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="flex items-center gap-2">
+                                <i data-lucide="line-chart" class="w-4 h-4 text-indigo-400"></i>
+                                <h3 class="text-xs font-bold text-slate-300 uppercase tracking-wider">Revenue Yield Curve Across Today's Showtimes</h3>
+                            </div>
+                            <span class="text-[11px] text-slate-400 flex items-center gap-1">
+                                <span class="w-2 h-2 rounded-full bg-indigo-500"></span> Dynamic Yield vs 
+                                <span class="w-2 h-2 rounded-full bg-slate-600"></span> Static Baseline
+                            </span>
+                        </div>
+                        <div class="h-64 sm:h-72 w-full relative">
+                            <canvas id="yieldChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-end gap-3 pt-2">
+                        <button onclick="resetWorkflow()" class="px-4 py-2 text-xs font-semibold text-slate-400 hover:text-slate-200 bg-slate-800 hover:bg-slate-700/80 rounded-lg transition border border-slate-700">
+                            Reset Controls
+                        </button>
+                        <button onclick="applyPricingRule()" class="px-4 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 rounded-lg transition shadow-lg shadow-indigo-600/20 flex items-center gap-1.5">
+                            <i data-lucide="check" class="w-4 h-4"></i> Deploy Pricing Rule Across Multiplex
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Operations Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Screen Operations Panel -->
+            <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 flex flex-col justify-between">
+                <div>
+                    <div class="flex items-center justify-between mb-4 border-b border-slate-800 pb-3">
+                        <div class="flex items-center gap-2">
+                            <i data-lucide="film" class="w-4 h-4 text-indigo-400"></i>
+                            <h3 class="font-bold text-white text-sm">Live Screen Operations & Status</h3>
+                        </div>
+                        <span class="text-xs bg-slate-800 border border-slate-700 text-slate-300 px-2.5 py-0.5 rounded-full font-medium">Real-Time Sync</span>
+                    </div>
+
+                    <div class="space-y-3">
+                        <div class="p-3.5 rounded-lg bg-slate-950/60 border border-slate-800 flex items-center justify-between gap-4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-2.5 h-2.5 rounded-full bg-emerald-500"></div>
+                                <div>
+                                    <div class="text-xs font-bold text-white">Audi 1 • IMAX 3D</div>
+                                    <div class="text-[11px] text-slate-400">Jawan • 07:15 PM Show</div>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-xs font-bold text-slate-200">220 / 250 Seats</div>
+                                <div class="text-[11px] font-semibold text-emerald-400">88% Occupancy (Surge Active)</div>
+                            </div>
+                        </div>
+
+                        <div class="p-3.5 rounded-lg bg-slate-950/60 border border-slate-800 flex items-center justify-between gap-4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-2.5 h-2.5 rounded-full bg-emerald-500"></div>
+                                <div>
+                                    <div class="text-xs font-bold text-white">Audi 2 • Dolby Atmos</div>
+                                    <div class="text-[11px] text-slate-400">Stree 2 • 07:30 PM Show</div>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-xs font-bold text-slate-200">110 / 180 Seats</div>
+                                <div class="text-[11px] font-semibold text-amber-400">61% Occupancy (Standard)</div>
+                            </div>
+                        </div>
+
+                        <div class="p-3.5 rounded-lg bg-slate-950/60 border border-slate-800 flex items-center justify-between gap-4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-2.5 h-2.5 rounded-full bg-indigo-500 animate-pulse"></div>
+                                <div>
+                                    <div class="text-xs font-bold text-white">Audi 3 • Gold Class Recliner</div>
+                                    <div class="text-[11px] text-slate-400">Kalki 2898 AD • 08:00 PM Show</div>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-xs font-bold text-slate-200">75 / 80 Seats</div>
+                                <div class="text-[11px] font-semibold text-emerald-400">93% Occupancy (Almost Full)</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-4 pt-3 border-t border-slate-800 text-xs text-slate-400 flex items-center justify-between">
+                    <span>HVAC & Projection System Telemetry Normal</span>
+                    <a href="#" class="text-indigo-400 hover:text-indigo-300 font-medium text-[11px]">View Screen Diagnostics &rarr;</a>
+                </div>
+            </div>
+
+            <!-- Ad Inventory Panel -->
+            <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 flex flex-col justify-between">
+                <div>
+                    <div class="flex items-center justify-between mb-4 border-b border-slate-800 pb-3">
+                        <div class="flex items-center gap-2">
+                            <i data-lucide="badge-indian-rupee" class="w-4 h-4 text-amber-400"></i>
+                            <h3 class="font-bold text-white text-sm">Pre-Show Ad Slots & Campaign Queue</h3>
+                        </div>
+                        <button class="text-xs font-semibold text-indigo-400 hover:text-indigo-300 bg-indigo-500/10 border border-indigo-500/20 px-2.5 py-1 rounded-md">
+                            + Allocate Slot
+                        </button>
+                    </div>
+
+                    <div class="space-y-3">
+                        <div class="p-3.5 rounded-lg bg-slate-950/60 border border-slate-800 flex items-center justify-between gap-4">
+                            <div>
+                                <div class="text-xs font-bold text-white">Tata EV Motors - SUV Launch (30s)</div>
+                                <div class="text-[11px] text-slate-400">Audi 1 & 3 • Pre-Feature Peak</div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-xs font-extrabold text-emerald-400">₹10,000 / Show</div>
+                                <div class="text-[11px] text-slate-400">12 Shows Left</div>
+                            </div>
+                        </div>
+
+                        <div class="p-3.5 rounded-lg bg-slate-950/60 border border-slate-800 flex items-center justify-between gap-4">
+                            <div>
+                                <div class="text-xs font-bold text-white">HDFC Bank - Credit Card Offer (15s)</div>
+                                <div class="text-[11px] text-slate-400">All Audi Screens • Intermission Sequence</div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-xs font-extrabold text-emerald-400">₹7,500 / Show</div>
+                                <div class="text-[11px] text-slate-400">28 Shows Left</div>
+                            </div>
+                        </div>
+
+                        <div class="p-3.5 rounded-lg bg-slate-950/60 border border-slate-800 flex items-center justify-between gap-4">
+                            <div>
+                                <div class="text-xs font-bold text-white">Reliance Digital - Festival Sale (30s)</div>
+                                <div class="text-[11px] text-slate-400">Audi 2 & 4 • Lobby Displays & Pre-Show</div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-xs font-extrabold text-amber-400">₹5,000 / Show</div>
+                                <div class="text-[11px] text-slate-400">Pending Approval</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-4 pt-3 border-t border-slate-800 text-xs text-slate-400 flex items-center justify-between">
+                    <span>Ad Target RPM: ₹3,500 / ₹4,000</span>
+                    <a href="#" class="text-indigo-400 hover:text-indigo-300 font-medium text-[11px]">Manage Campaign Playlist &rarr;</a>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Toast -->
+    <div id="toast" class="fixed bottom-6 right-6 hidden bg-emerald-600 text-white px-4 py-3 rounded-xl shadow-2xl text-xs font-semibold items-center gap-2 border border-emerald-400 z-50">
+        <i data-lucide="check-circle" class="w-4 h-4"></i>
+        <span>Pricing strategy successfully committed to box office POS system.</span>
+    </div>
+
+    <!-- Scripting Engine -->
+    <script>
+        lucide.createIcons();
+        let yieldChart = null;
+
+        function initChart() {
+            const ctx = document.getElementById('yieldChart').getContext('2d');
+            const gradient = ctx.createLinearGradient(0, 0, 0, 300);
+            gradient.addColorStop(0, 'rgba(99, 102, 241, 0.35)');
+            gradient.addColorStop(1, 'rgba(99, 102, 241, 0.0)');
+
+            yieldChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['12:00 PM', '03:00 PM', '06:00 PM', '08:30 PM', '11:00 PM'],
+                    datasets: [
+                        {
+                            label: 'Dynamic Strategy Yield (₹)',
+                            data: [45000, 78000, 127240, 165000, 92000],
+                            borderColor: '#6366f1',
+                            backgroundColor: gradient,
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.35,
+                            pointBackgroundColor: '#818cf8',
+                            pointRadius: 4
+                        },
+                        {
+                            label: 'Standard Baseline (₹)',
+                            data: [35000, 60000, 95000, 120000, 70000],
+                            borderColor: '#475569',
+                            borderDash: [6, 6],
+                            borderWidth: 2,
+                            fill: false,
+                            tension: 0.35,
+                            pointRadius: 0
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { grid: { color: 'rgba(51, 65, 85, 0.3)' }, ticks: { color: '#94a3b8', font: { size: 10 } } },
+                        y: { grid: { color: 'rgba(51, 65, 85, 0.3)' }, ticks: { color: '#94a3b8', font: { size: 10 }, callback: v => '₹' + v.toLocaleString('en-IN') } }
+                    }
+                }
+            });
+        }
+
+        function updateWorkflow() {
+            const demand = parseInt(document.getElementById('demandSlider').value);
+            const peak = parseInt(document.getElementById('peakSlider').value) / 10;
+            const surgeEnabled = document.getElementById('surgeToggle').checked;
+            const adEnabled = document.getElementById('adToggle').checked;
+            const screen = document.getElementById('screenSelect').value;
+
+            let totalSeats = 250;
+            let basePrice = 350.00;
+
+            if (screen === "1") { totalSeats = 250; basePrice = 400.00; }
+            else if (screen === "2") { totalSeats = 180; basePrice = 250.00; }
+            else if (screen === "3") { totalSeats = 80; basePrice = 750.00; }
+
+            document.getElementById('demandVal').innerText = demand > 75 ? `High (${demand}%)` : demand > 45 ? `Moderate (${demand}%)` : `Low (${demand}%)`;
+            document.getElementById('peakVal').innerText = `${peak.toFixed(1)}x Multiplier`;
+
+            let finalPrice = basePrice * peak * (1 + (demand / 250));
+            if (surgeEnabled && demand > 80) finalPrice *= 1.15;
+
+            const adRevenuePerShow = adEnabled ? 25000 : 0;
+            const estimatedSeatsSold = Math.min(totalSeats, Math.round(totalSeats * (demand / 100)));
+            const calculatedRevenue = Math.round((estimatedSeatsSold * finalPrice) + adRevenuePerShow);
+
+            document.getElementById('computedPrice').innerText = `₹${finalPrice.toFixed(2)}`;
+            document.getElementById('computedSeats').innerText = `${estimatedSeatsSold} / ${totalSeats} Seats`;
+            document.getElementById('computedRevenue').innerText = `₹${calculatedRevenue.toLocaleString('en-IN')}`;
+
+            if (yieldChart) {
+                const ratio = calculatedRevenue / 127240;
+                yieldChart.data.datasets[0].data = [
+                    Math.round(45000 * ratio),
+                    Math.round(78000 * ratio),
+                    calculatedRevenue,
+                    Math.round(165000 * ratio),
+                    Math.round(92000 * ratio)
+                ];
+                yieldChart.update();
+            }
+        }
+
+        function resetWorkflow() {
+            document.getElementById('demandSlider').value = 85;
+            document.getElementById('peakSlider').value = 12;
+            document.getElementById('surgeToggle').checked = true;
+            document.getElementById('adToggle').checked = true;
+            document.getElementById('screenSelect').value = "1";
+            updateWorkflow();
+        }
+
+        function applyPricingRule() {
+            const toast = document.getElementById('toast');
+            toast.classList.remove('hidden');
+            toast.classList.add('flex');
+            setTimeout(() => {
+                toast.classList.remove('flex');
+                toast.classList.add('hidden');
+            }, 3000);
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            initChart();
+            updateWorkflow();
+        });
+    </script>
+</body>
+</html>
