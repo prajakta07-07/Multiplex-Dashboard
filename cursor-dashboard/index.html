@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CineSignal — FilmForte Multiplex</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Libre+Baskerville:wght@700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --navy-950: #070b14;
+      --navy-900: #0c1324;
+      --navy-850: #101a30;
+      --navy-800: #152038;
+      --navy-700: #1c2b4a;
+      --gold: #d4a84b;
+      --gold-2: #e4c36a;
+      --trust: #3b82f6;
+      --crit: #ef4444;
+      --warn: #f59e0b;
+      --ok: #22c55e;
+      --text: #e8edf7;
+      --muted: #94a3b8;
+      --dim: #64748b;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; }
+    body {
+      background: var(--navy-900);
+      color: var(--text);
+      font-family: "IBM Plex Sans", system-ui, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    a { color: inherit; text-decoration: none; }
+    button, input, select { font-family: inherit; }
+    button { cursor: pointer; }
+    .layout { display: flex; min-height: 100vh; }
+    .sidebar {
+      position: fixed; inset: 0 auto 0 0; width: 240px;
+      background: var(--navy-950); border-right: 1px solid rgba(255,255,255,.08);
+      display: flex; flex-direction: column; z-index: 20;
+    }
+    .brand { padding: 20px; border-bottom: 1px solid rgba(255,255,255,.08); }
+    .brand h1 { font-family: "Libre Baskerville", Georgia, serif; font-size: 22px; margin: 0; font-weight: 700; }
+    .brand p { margin: 8px 0 0; font-size: 13px; color: var(--muted); font-weight: 500; }
+    nav { flex: 1; padding: 16px 12px; display: flex; flex-direction: column; gap: 4px; }
+    nav a {
+      display: flex; align-items: center; gap: 12px;
+      padding: 10px 12px; border-radius: 8px; font-size: 15px; font-weight: 500; color: var(--muted);
+    }
+    nav a:hover { background: rgba(255,255,255,.04); color: #e2e8f0; }
+    nav a.active { background: rgba(59,130,246,.15); color: #fff; box-shadow: inset 3px 0 0 #3b82f6; }
+    .persona { padding: 16px 20px; border-top: 1px solid rgba(255,255,255,.08); }
+    .persona-row { display: flex; gap: 12px; align-items: center; }
+    .avatar { width: 36px; height: 36px; border-radius: 50%; background: rgba(59,130,246,.2); color: var(--trust); display: grid; place-items: center; font-weight: 600; font-size: 14px; }
+    .ok-dot { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--ok); margin-top: 12px; }
+    .ok-dot i { width: 6px; height: 6px; background: var(--ok); border-radius: 50%; display: block; }
+    .main { margin-left: 240px; flex: 1; min-width: 0; }
+    header.top {
+      position: sticky; top: 0; z-index: 10; height: 64px;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 24px; border-bottom: 1px solid rgba(255,255,255,.08);
+      background: rgba(12,19,36,.92); backdrop-filter: blur(10px);
+    }
+    header.top h2 { margin: 0; font-size: 18px; }
+    header.top .clock { font-size: 12px; color: var(--muted); margin: 2px 0 0; }
+    .btn-emerg {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: var(--crit); color: #fff; border: 0; border-radius: 8px;
+      padding: 8px 16px; font-weight: 600; font-size: 14px;
+    }
+    .pulse { animation: pulse 2.2s ease-out infinite; }
+    @keyframes pulse {
+      0%,100% { box-shadow: 0 0 0 0 rgba(239,68,68,.45); }
+      50% { box-shadow: 0 0 0 6px rgba(239,68,68,0); }
+    }
+    .content { padding: 24px; }
+    .kicker { font-size: 12px; font-weight: 600; letter-spacing: .16em; text-transform: uppercase; color: var(--dim); margin: 0 0 4px; }
+    .kicker.gold { color: #b8892e; }
+    h1.page { font-size: 30px; margin: 0; letter-spacing: -0.02em; }
+    .sub { color: var(--muted); font-size: 15px; max-width: 640px; line-height: 1.5; margin: 8px 0 0; }
+    .stack { display: flex; flex-direction: column; gap: 32px; }
+    .alert {
+      border: 1px solid rgba(255,255,255,.06); border-left: 4px solid; border-radius: 16px; padding: 16px 20px;
+      display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap;
+    }
+    .alert.critical { border-left-color: var(--crit); background: rgba(239,68,68,.1); }
+    .alert.warning { border-left-color: var(--warn); background: rgba(245,158,11,.08); }
+    .alert.info { border-left-color: var(--trust); background: rgba(255,255,255,.04); }
+    .alert .meta { font-size: 11px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+    .alert h3 { margin: 6px 0 0; font-size: 22px; line-height: 1.3; }
+    .alert p { margin: 8px 0 0; color: #cbd5e1; font-size: 15px; line-height: 1.5; max-width: 720px; }
+    .grid-5 { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+    .grid-12 { display: grid; grid-template-columns: repeat(12, 1fr); gap: 12px; }
+    .card {
+      background: var(--navy-800); border: 1px solid rgba(255,255,255,.08); border-radius: 16px; padding: 16px 20px;
+    }
+    .card.gold { border-color: rgba(212,168,75,.25); }
+    .card.crit { border-color: rgba(239,68,68,.6); background: rgba(239,68,68,.08); }
+    .card.warn { border-color: rgba(245,158,11,.5); background: rgba(245,158,11,.06); }
+    .scr-id { font-size: 24px; font-weight: 700; margin: 0; }
+    .scr-id.crit { color: var(--crit); }
+    .pill { font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; border-radius: 6px; padding: 3px 8px; }
+    .pill.ok { background: rgba(34,197,94,.2); color: var(--ok); }
+    .pill.warn { background: rgba(245,158,11,.2); color: #fde68a; }
+    .pill.crit { background: var(--crit); color: #fff; }
+    .bar { height: 6px; background: var(--navy-700); border-radius: 99px; overflow: hidden; }
+    .bar > span { display: block; height: 100%; border-radius: 99px; background: var(--trust); }
+    .bar > span.crit { background: var(--crit); }
+    .bar > span.warn { background: var(--warn); }
+    .bar > span.gold { background: var(--gold); }
+    .btn {
+      display: inline-flex; align-items: center; gap: 8px; border-radius: 8px; padding: 10px 16px;
+      font-size: 14px; font-weight: 600; border: 1px solid transparent;
+    }
+    .btn-crit { background: var(--crit); color: #fff; }
+    .btn-warn { background: rgba(245,158,11,.15); color: #fef3c7; border-color: rgba(245,158,11,.4); }
+    .btn-gold { background: var(--gold); color: var(--navy-950); }
+    .btn-gold-out { background: rgba(212,168,75,.1); color: var(--gold-2); border-color: rgba(212,168,75,.5); }
+    .btn-ghost { background: rgba(255,255,255,.05); color: #fff; border-color: rgba(255,255,255,.15); }
+    .btn-link { color: var(--trust); font-size: 14px; font-weight: 500; background: none; border: 0; padding: 0; }
+    .gold-num { color: var(--gold-2); font-weight: 600; }
+    .empty { text-align: center; padding: 40px 24px; border: 1px solid rgba(34,197,94,.3); background: rgba(34,197,94,.08); border-radius: 16px; }
+    .muted { color: var(--muted); font-size: 13px; }
+    .row-between { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; flex-wrap: wrap; }
+    .chart { display: flex; align-items: flex-end; gap: 4px; height: 88px; padding-top: 8px; }
+    .chart.tall { height: 220px; }
+    .chart .col { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; gap: 4px; }
+    .chart .pair { display: flex; align-items: flex-end; gap: 2px; width: 100%; height: 100%; }
+    .chart .b { width: 100%; border-radius: 3px 3px 0 0; min-height: 2px; }
+    .chart .lbl { font-size: 10px; color: var(--dim); }
+    .toast-host { position: fixed; right: 24px; bottom: 24px; display: flex; flex-direction: column; gap: 8px; z-index: 40; width: 360px; max-width: calc(100% - 32px); }
+    .toast { border-radius: 12px; padding: 12px 16px; font-size: 14px; background: var(--navy-800); border: 1px solid rgba(34,197,94,.3); color: #a7f3d0; }
+    .toast.gold { border-color: rgba(212,168,75,.4); color: var(--gold-2); }
+    .toast.crit { border-color: rgba(239,68,68,.4); color: #fecaca; }
+    .log-row { display: flex; border-bottom: 1px solid rgba(255,255,255,.06); }
+    .log-row:last-child { border-bottom: 0; }
+    .edge { width: 6px; flex-shrink: 0; }
+    .edge.critical { background: var(--crit); }
+    .edge.warning { background: var(--warn); }
+    .edge.info { background: #64748b; }
+    .tag { font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; border-radius: 6px; padding: 2px 8px; border: 1px solid rgba(255,255,255,.15); color: var(--muted); }
+    .tag.gold { background: rgba(212,168,75,.15); color: var(--gold-2); border-color: transparent; }
+    .filters { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0; }
+    .filters input, .filters select {
+      background: var(--navy-800); border: 1px solid rgba(255,255,255,.1); color: #fff;
+      border-radius: 8px; padding: 8px 12px; font-size: 14px;
+    }
+    .filters input { flex: 1; min-width: 200px; }
+    .factor { border: 1px solid rgba(255,255,255,.08); background: var(--navy-850); border-radius: 12px; padding: 12px 16px; margin-top: 12px; }
+    .factor strong { color: var(--gold-2); font-size: 14px; }
+    .note { display: flex; gap: 10px; border: 1px solid rgba(255,255,255,.1); border-radius: 12px; padding: 12px 16px; font-size: 14px; color: #cbd5e1; margin-top: 20px; }
+    .actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px; }
+    input[type=range] { width: 100%; accent-color: var(--gold); }
+    @media (max-width: 1100px) {
+      .grid-5 { grid-template-columns: repeat(2, 1fr); }
+      .grid-2, .grid-4 { grid-template-columns: 1fr; }
+      .grid-12 { grid-template-columns: 1fr; }
+    }
+    .menu-btn { display: none; background: transparent; border: 1px solid rgba(255,255,255,.15); color: #fff; border-radius: 8px; padding: 8px 10px; margin-right: 12px; }
+    .scrim { display: none; }
+    @media (max-width: 800px) {
+      .sidebar { transform: translateX(-100%); transition: transform .2s ease; }
+      .sidebar.open { transform: translateX(0); }
+      .main { margin-left: 0; }
+      .menu-btn { display: inline-flex; }
+      .scrim.show { display: block; position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 15; }
+      header.top { gap: 8px; }
+      .grid-5 { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="scrim" id="scrim"></div>
+  <div class="layout">
+    <aside class="sidebar" id="sidebar">
+      <div class="brand">
+        <h1>CineSignal</h1>
+        <p>FilmForte Multiplex</p>
+      </div>
+      <nav id="nav"></nav>
+      <div class="persona">
+        <div class="persona-row">
+          <div class="avatar">R</div>
+          <div>
+            <div style="font-size:14px;font-weight:600">Ravi</div>
+            <div style="font-size:12px;color:var(--muted)">Operations Manager</div>
+          </div>
+        </div>
+        <div class="ok-dot"><i></i> On the floor</div>
+      </div>
+    </aside>
+    <div class="main">
+      <header class="top">
+        <div style="display:flex;align-items:center">
+          <button class="menu-btn" id="menuBtn" type="button" aria-label="Open menu">☰</button>
+          <div>
+            <h2>FilmForte Multiplex</h2>
+            <p class="clock">Mon, 31 Aug · 4:18 PM</p>
+          </div>
+        </div>
+        <button class="btn-emerg" id="emergBtn" type="button">Emergency</button>
+      </header>
+      <div class="content" id="app"></div>
+    </div>
+  </div>
+  <div class="toast-host" id="toasts"></div>
+
+<script>
+const inr = n => "₹" + Math.round(n).toLocaleString("en-IN");
+const inrL = n => n >= 100000 ? "₹" + (n/100000).toFixed(1) + "L" : inr(n);
+const esc = s => String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/"/g,"&quot;");
+
+const hours = [
+  { hour:"10A", footfall:40, expected:55, staffOn:6, staffNeed:6 },
+  { hour:"11A", footfall:62, expected:70, staffOn:6, staffNeed:6 },
+  { hour:"12P", footfall:95, expected:110, staffOn:8, staffNeed:8 },
+  { hour:"1P", footfall:140, expected:150, staffOn:9, staffNeed:9 },
+  { hour:"2P", footfall:128, expected:130, staffOn:9, staffNeed:9 },
+  { hour:"3P", footfall:160, expected:155, staffOn:10, staffNeed:10 },
+  { hour:"4P", footfall:175, expected:170, staffOn:10, staffNeed:10 },
+  { hour:"5P", footfall:190, expected:185, staffOn:11, staffNeed:11 },
+  { hour:"6P", footfall:210, expected:240, staffOn:11, staffNeed:13 },
+  { hour:"7P", footfall:230, expected:250, staffOn:12, staffNeed:13 },
+  { hour:"8P", footfall:245, expected:260, staffOn:12, staffNeed:12 },
+  { hour:"9P", footfall:180, expected:190, staffOn:10, staffNeed:10 },
+  { hour:"10P", footfall:90, expected:95, staffOn:8, staffNeed:8 },
+];
+const revenue = [
+  { hour:"10A", actual:18000, target:22000 }, { hour:"11A", actual:32000, target:35000 },
+  { hour:"12P", actual:54000, target:52000 }, { hour:"1P", actual:78000, target:74000 },
+  { hour:"2P", actual:96000, target:98000 }, { hour:"3P", actual:128000, target:120000 },
+  { hour:"4P", actual:152000, target:145000 },
+];
+
+let screens = [
+  { id:1, film:"War 2", runState:"showing", occupancy:72, capacity:312, showStart:"3:00 PM", showEnd:"6:10 PM", elapsed:"1h 18m", remaining:"1h 52m", progress:0.41, nextShow:"6:45 PM", projector:"predictive", note:"Lamp trending toward high temp based on today’s usage. Service before the 9:30 PM show.", lamp:78, tech:false },
+  { id:2, film:"Saiyaara", runState:"showing", occupancy:81, capacity:246, showStart:"2:45 PM", showEnd:"5:40 PM", elapsed:"1h 33m", remaining:"1h 22m", progress:0.54, nextShow:"6:15 PM", projector:"normal", note:"Lamp and cooling within band.", lamp:62, tech:false },
+  { id:3, film:"Superboys of Malegaon", runState:"turnaround", occupancy:0, capacity:198, showStart:"—", showEnd:"—", elapsed:"—", remaining:"12 min", progress:0.7, nextShow:"4:30 PM", projector:"normal", note:"Standby. House crew inside for turnaround.", lamp:41, tech:false },
+  { id:4, film:"F1", runState:"halted", occupancy:64, capacity:220, showStart:"3:15 PM", showEnd:"5:55 PM", elapsed:"Halted", remaining:"At risk", progress:0.38, nextShow:"6:30 PM", projector:"failed", note:"Lamp temperature 95°C — cooling cycle stuck. Evening shows at risk.", lamp:95, tech:false },
+  { id:5, film:"Coolie", runState:"showing", occupancy:54, capacity:268, showStart:"4:00 PM", showEnd:"6:50 PM", elapsed:"18 min", remaining:"2h 32m", progress:0.11, nextShow:"7:20 PM", projector:"normal", note:"Lamp and cooling within band.", lamp:58, tech:false },
+];
+
+let pricing = [
+  { id:"pr-war2-sat", screen:1, film:"War 2", showtime:"7:00 PM", dayLabel:"Sat 6 Sep", current:450, low:520, high:580, mid:550, direction:"surge", decision:"pending", occ:91, factors:[
+    { label:"Advance booking pace", detail:"Saturday 7 PM is 38% ahead of the 4-week Saturday evening baseline for this hall." },
+    { label:"Day-part pattern", detail:"War 2 holds through late shows; last three Friday/Saturday 7 PM houses closed above 88%." },
+    { label:"Comparable past show", detail:"Jawan Week-2 Saturday 7 PM on Screen 1 lifted ₹80 with no walk-up drop-off." },
+  ]},
+  { id:"pr-saiyaara-today", screen:2, film:"Saiyaara", showtime:"9:15 PM", dayLabel:"Today", current:380, low:400, high:430, mid:415, direction:"surge", decision:"pending", occ:84, factors:[
+    { label:"Walk-up vs. usual", detail:"Box office queue for tonight’s last show is already matching a typical Saturday, not a Monday." },
+    { label:"Day-part pattern", detail:"Romance titles on Screen 2 over-index after 9 PM on weeknights." },
+  ]},
+  { id:"pr-coolie-tue", screen:5, film:"Coolie", showtime:"1:00 PM", dayLabel:"Tue 2 Sep", current:320, low:250, high:280, mid:265, direction:"stimulate", decision:"pending", occ:31, factors:[
+    { label:"Advance booking pace", detail:"Tuesday matinee is 22% behind the Coolie weekday curve; seats will go dark without a nudge." },
+    { label:"Comparable past show", detail:"A ₹50 matinee cut on Screen 5 last Tuesday filled 18 extra seats and lifted F&B attach." },
+    { label:"Mall footfall", detail:"Tuesday lunch traffic in the mall is soft this week (office WFH cluster)." },
+  ]},
+];
+
+let alerts = [
+  { id:"al-s4", severity:"critical", title:"Screen 4 — projector flagged, evening shows at risk", reason:"Lamp hit 95°C and cooling stalled mid-show. F1 is halted. Dispatch a tech now — this is reversible and does not need price-style approval.", age:"12 min ago", status:"open", screenId:4, action:"dispatch" },
+  { id:"al-s1-lamp", severity:"warning", title:"Screen 1 lamp trending hot — service before 9:30 PM", reason:"Usage today is 18% above the lamp’s usual Monday load. Temperature is still in band (78°C) but the model expects a breach during the late show if left unserviced.", age:"28 min ago", status:"open", screenId:1, action:"dispatch" },
+  { id:"al-price", severity:"warning", title:"3 pricing recommendations pending review", reason:"CineSignal will not change ticket prices on its own. War 2 Saturday 7 PM is the highest-confidence surge; Coolie Tuesday matinee needs a cut to avoid a dark house.", age:"41 min ago", status:"open", action:"review_pricing" },
+  { id:"al-fnb", severity:"info", title:"F&B counter understaffed for 6:30 PM rush", reason:"Expected 190 concession tickets in the 6–7 PM window vs. 3 cashiers on the roster. Short 1 person at Counter A.", age:"1 hr ago", status:"open", action:"assign_staff" },
+];
+
+let ads = [
+  { id:"ad-lobby", name:"Lobby display", kind:"Lobby", fill:82, cap:12, booked:10, rec:null },
+  { id:"ad-preshow", name:"Pre-show reel", kind:"In-auditorium", fill:61, cap:18, booked:11, rec:{
+    summary:"Move two Gold Class lounge spots into the pre-show reel",
+    from:"Lobby display (2 leftover 10-sec loops)", to:"Pre-show reel, Screens 2 & 5", fillDelta:"+11 pts fill on reel", decision:"pending",
+    factors:[
+      { label:"Attention vs. inventory", detail:"Lobby loops are already 82% full; extra creatives get <4 sec average dwell after 5 PM." },
+      { label:"House mix", detail:"Screens 2 and 5 still have unsold 15-sec cells and a younger walk-up audience matching the lounge offer." },
+      { label:"Yield", detail:"Same advertiser paid 1.6× CPM last week when moved from lobby overflow into the reel." },
+    ]
+  }},
+];
+
+let staff = [
+  { id:"box", name:"Box office", required:3, assigned:3, note:"Fully staffed through close." },
+  { id:"fnb", name:"F&B counter A", required:4, assigned:3, gapHour:"6:30 PM", note:"Short 1 for the 6:30 PM rush." },
+  { id:"ushers", name:"Ushers / floor", required:4, assigned:4, note:"Coverage matches five-hall load." },
+  { id:"tech", name:"Projection / tech", required:1, assigned:1, note:"On site. Screen 4 needs this person in the booth, not on rounds." },
+];
+
+let log = [
+  { id:"l1", ts:"4:06 PM", cat:"equipment", severity:"critical", title:"Screen 4 projector overheat", detail:"Temp reached 95°C. Show halted. Awaiting technician.", status:"open", actor:"cinesignal", autonomy:"autonomous" },
+  { id:"l2", ts:"3:50 PM", cat:"ops", severity:"warning", title:"POS terminal 3 offline — reboot initiated", detail:"Counter A POS lost heartbeat. CineSignal rebooted remotely. Terminal back online in 41s.", status:"resolved", actor:"cinesignal", autonomy:"autonomous" },
+  { id:"l3", ts:"3:22 PM", cat:"pricing", severity:"info", title:"Pricing suggestion queued: War 2 Sat 7:00 PM", detail:"Suggested band ₹520–₹580. Waiting for Ravi’s approval — not applied.", status:"open", actor:"cinesignal", autonomy:"approval" },
+  { id:"l4", ts:"2:11 PM", cat:"staffing", severity:"warning", title:"Concession A below threshold for 6:30 PM", detail:"Forecast +1 cashier vs roster. Flagged for assignment.", status:"open", actor:"cinesignal", autonomy:"approval" },
+  { id:"l5", ts:"1:04 PM", cat:"ads", severity:"info", title:"Lobby creatives auto-rotated", detail:"Stale 10-sec loop swapped for this week’s Gold Class spot. Low-risk inventory hygiene.", status:"resolved", actor:"cinesignal", autonomy:"autonomous" },
+  { id:"l6", ts:"11:40 AM", cat:"ops", severity:"info", title:"House lights preset applied — Screen 3", detail:"Turnaround lighting cue ran automatically after credits.", status:"resolved", actor:"cinesignal", autonomy:"autonomous" },
+];
+
+let logFilter = { q:"", cat:"all", sev:"all", st:"all" };
+let adjustId = null, adjustVal = 0;
+
+function toast(msg, tone) {
+  const el = document.createElement("div");
+  el.className = "toast" + (tone ? " " + tone : "");
+  el.textContent = msg;
+  document.getElementById("toasts").appendChild(el);
+  setTimeout(() => el.remove(), 4200);
+}
+function prependLog(entry) {
+  log.unshift(Object.assign({ id:"l"+Date.now(), ts:"Just now" }, entry));
+}
+
+function dispatchTech(id) {
+  const s = screens.find(x => x.id === id);
+  const failed = s && s.projector === "failed";
+  screens = screens.map(x => {
+    if (x.id !== id) return x;
+    if (x.projector === "failed") return Object.assign({}, x, { tech:true, note:"Technician dispatched. Cooling still stuck — awaiting booth arrival." });
+    return Object.assign({}, x, { tech:true, projector:"normal", note:"Preventive service booked before 9:30 PM. Lamp still in band (78°C)." });
+  });
+  alerts = alerts.map(a => a.screenId === id && a.action === "dispatch" ? Object.assign({}, a, { status:"in_progress" }) : a);
+  prependLog({ cat:"equipment", severity: failed ? "critical" : "warning", title:"Technician dispatched — Screen "+id, detail: failed ? "Ravi sent a tech to Screen 4. Logged immediately; no approval gate." : "Preventive dispatch. Low-risk, reversible.", status:"in_progress", actor:"ravi", autonomy:"autonomous" });
+  toast("Technician dispatched to Screen " + id);
+  render();
+}
+
+function decidePricing(id, decision, adjustedTo) {
+  const rec = pricing.find(p => p.id === id);
+  const final = adjustedTo != null ? "adjusted" : decision;
+  pricing = pricing.map(p => p.id === id ? Object.assign({}, p, { decision: final, adjustedTo }) : p);
+  const still = pricing.filter(p => p.decision === "pending").length;
+  alerts = alerts.map(a => a.action === "review_pricing" ? Object.assign({}, a, {
+    status: still === 0 ? "resolved" : "open",
+    title: still === 0 ? "Pricing queue cleared" : still + " pricing recommendation" + (still===1?"":"s") + " pending review"
+  }) : a);
+  const label = adjustedTo != null ? "Adjusted to " + inr(adjustedTo) : decision === "accepted" ? "Accepted band " + inr(rec.low) + "–" + inr(rec.high) : "Rejected — current price held";
+  prependLog({ cat:"pricing", severity:"info", title:(final==="rejected"?"Rejected":final==="adjusted"?"Adjusted":"Accepted")+" price — "+rec.film+" Screen "+rec.screen, detail: rec.dayLabel+" "+rec.showtime+". "+label+". Human approval recorded.", status:"resolved", actor:"ravi", autonomy:"approval" });
+  adjustId = null;
+  toast(label, "gold");
+  location.hash = "#/pricing";
+  render();
+}
+
+function decideAd(decision) {
+  ads = ads.map(s => {
+    if (!s.rec) return s;
+    const rec = Object.assign({}, s.rec, { decision });
+    return Object.assign({}, s, { rec, fill: decision==="accepted" ? Math.min(100, s.fill+11) : s.fill, booked: decision==="accepted" ? s.booked+2 : s.booked });
+  });
+  prependLog({ cat:"ads", severity:"info", title: decision==="accepted" ? "Ad reallocation accepted — pre-show reel" : "Ad reallocation rejected", detail: decision==="accepted" ? "Two Gold Class spots moved. Required Ravi’s OK." : "Kept current split.", status:"resolved", actor:"ravi", autonomy:"approval" });
+  toast(decision==="accepted" ? "Ad reallocation applied" : "Ad reallocation rejected", "gold");
+  render();
+}
+
+function assignStaff() {
+  staff = staff.map(s => s.id==="fnb" ? Object.assign({}, s, { assigned:s.required, gapHour:null, note:"Extra cashier pulled from usher float for 6:30 PM." }) : s);
+  alerts = alerts.map(a => a.action==="assign_staff" ? Object.assign({}, a, { status:"resolved" }) : a);
+  prependLog({ cat:"staffing", severity:"info", title:"F&B gap closed — Counter A", detail:"Ravi assigned +1 cashier for the 6:30 PM rush.", status:"resolved", actor:"ravi", autonomy:"approval" });
+  toast("Cashier assigned to F&B Counter A");
+  render();
+}
+
+function route() {
+  const h = (location.hash || "#/overview").replace(/^#/, "");
+  const parts = h.split("/").filter(Boolean);
+  return { page: parts[0] || "overview", id: parts[1] };
+}
+
+function navHtml() {
+  const { page } = route();
+  const items = [
+    ["overview","Overview"],["screens","Screens"],["pricing","Pricing"],["ads","Ads"],["staffing","Staffing"],["log","Operations Log"]
+  ];
+  document.getElementById("nav").innerHTML = items.map(([k,l]) =>
+    `<a href="#/${k}" class="${page===k?"active":""}">${esc(l)}</a>`
+  ).join("");
+  document.getElementById("sidebar").classList.remove("open");
+  document.getElementById("scrim").classList.remove("show");
+  const crit = alerts.filter(a => a.severity==="critical" && a.status==="open").length;
+  document.getElementById("emergBtn").className = "btn-emerg" + (crit ? " pulse" : "");
+}
+
+function pill(s) {
+  if (s.runState==="halted") return '<span class="pill crit">Halted</span>';
+  if (s.runState==="turnaround") return '<span class="pill warn">Turnaround</span>';
+  return '<span class="pill ok">On time</span>';
+}
+
+function screenCard(s) {
+  const halted = s.runState==="halted";
+  const warn = s.projector==="predictive" && !s.tech;
+  const cls = halted ? "card crit" : warn ? "card warn" : "card";
+  return `<a href="#/screens" class="${cls} ${halted?"pulse":""}">
+    <div class="row-between"><p class="scr-id ${halted?"crit":""}">Screen ${s.id}</p>${pill(s)}</div>
+    <p style="font-size:18px;font-weight:600;margin:12px 0 4px">${esc(s.film)}</p>
+    <p class="muted">${s.runState==="showing" ? s.showStart+"–"+s.showEnd : (s.nextShow?"Next "+s.nextShow:"No show")}</p>
+    ${s.runState==="showing" ? `<div class="bar" style="margin-top:12px"><span style="width:${s.progress*100}%"></span></div>
+      <p class="muted" style="margin-top:4px">${s.elapsed} in · ${s.remaining} left</p>` : ""}
+    <div class="row-between" style="margin-top:12px;font-size:14px">
+      <span>${s.occupancy}%</span>
+      <span style="color:${s.projector==="failed"?"var(--crit)":(warn?"var(--warn)":"var(--ok)")}">${s.lamp}°C</span>
+    </div>
+  </a>`;
+}
+
+function alertAction(a) {
+  if (a.status==="in_progress") return '<span class="pill ok">Tech on the way</span>';
+  if (a.action==="dispatch") return `<button class="btn ${a.severity==="critical"?"btn-crit":"btn-warn"}" data-act="dispatch" data-id="${a.screenId}">Dispatch technician</button>`;
+  if (a.action==="review_pricing") return '<a class="btn btn-gold-out" href="#/pricing">Review prices</a>';
+  if (a.action==="assign_staff") return '<button class="btn btn-ghost" data-act="assign">Assign +1</button>';
+  return "";
+}
+
+function barChart(data, keys, colors, tall) {
+  const max = Math.max(...data.flatMap(d => keys.map(k => d[k])));
+  return `<div class="chart ${tall?"tall":""}">${data.map(d => `
+    <div class="col">
+      <div class="pair">${keys.map((k,i)=>`<div class="b" style="height:${Math.max(2,(d[k]/max)*100)}%;background:${colors[i]}"></div>`).join("")}</div>
+      <div class="lbl">${d.hour}</div>
+    </div>`).join("")}</div>`;
+}
+
+function overview() {
+  const open = alerts.filter(a => a.status!=="resolved").sort((a,b)=>({critical:0,warning:1,info:2}[a.severity]-({critical:0,warning:1,info:2}[b.severity])));
+  const pending = pricing.filter(p => p.decision==="pending");
+  const live = screens.filter(s => s.runState==="showing" || s.runState==="halted");
+  const occ = Math.round(live.reduce((n,s)=>n+s.occupancy,0)/live.length);
+  const today = revenue.reduce((n,r)=>n+r.actual,0);
+  const adFill = Math.round(ads.reduce((n,a)=>n+a.fill,0)/ads.length);
+  return `<div class="stack">
+    <section>
+      <p class="kicker">Tier 1 · checked constantly</p>
+      <h1 class="page">Needs attention</h1>
+      <p class="sub">Ranked by urgency. Gold actions change money or ads and wait for you. Red actions (dispatch) run as soon as you tap.</p>
+      <div style="margin-top:16px;display:flex;flex-direction:column;gap:12px">
+        ${open.length===0 ? `<div class="empty"><p style="font-size:20px;font-weight:600;margin:0">Floor is clear</p><p class="muted">No open items.</p></div>` :
+          open.map(a => `<article class="alert ${a.severity} ${a.severity==="critical"?"pulse":""}">
+            <div><div class="meta">${a.severity} · ${a.age}${a.status==="in_progress"?" · in progress":""}</div>
+            <h3>${esc(a.title)}</h3><p>${esc(a.reason)}</p></div>${alertAction(a)}</article>`).join("")}
+      </div>
+    </section>
+    <section>
+      <div class="row-between"><div><p class="kicker">Tier 1 · five halls</p><h1 class="page" style="font-size:24px">Screen status</h1></div>
+      <a class="btn-link" href="#/screens">Open matrix</a></div>
+      <div class="grid-5" style="margin-top:12px">${screens.map(screenCard).join("")}</div>
+    </section>
+    <section class="grid-2">
+      <div class="card gold">
+        <p class="kicker gold">Tier 2 · AI · needs your OK</p>
+        <h2 style="margin:4px 0 12px">Pricing recommendations</h2>
+        ${pending.length===0 ? `<p class="muted">No pending price changes. CineSignal will not auto-apply fares.</p>` :
+          pending.map(p => `<a href="#/pricing/${p.id}" class="card gold" style="display:block;margin-bottom:10px;padding:12px 16px">
+            <div class="row-between"><strong>Screen ${p.screen} · ${esc(p.film)}</strong><span class="gold-num">${inr(p.low)}–${inr(p.high)}</span></div>
+            <p class="muted" style="margin:6px 0 0">${p.dayLabel} ${p.showtime} · now ${inr(p.current)} · ${p.direction}</p>
+          </a>`).join("")}
+      </div>
+      <div class="card">
+        <p class="kicker">Tier 2 · occupancy</p>
+        <h2 style="margin:4px 0">Houses right now</h2>
+        <p style="font-size:48px;font-weight:600;margin:12px 0 0">${occ}%</p>
+        <p class="muted">Average across live halls</p>
+        ${screens.map(s => `<div style="display:flex;align-items:center;gap:12px;margin-top:8px;font-size:14px">
+          <span style="width:80px;color:var(--muted)">Screen ${s.id}</span>
+          <div class="bar" style="flex:1"><span class="${s.runState==="halted"?"crit":""}" style="width:${s.occupancy}%"></span></div>
+          <span style="width:40px;text-align:right">${s.occupancy}%</span></div>`).join("")}
+      </div>
+    </section>
+    <section class="card">
+      <div class="row-between"><div><p class="kicker">Tier 3 · known windows</p><h2 style="margin:4px 0 0">Staffing coverage</h2></div>
+      <a class="btn-link" href="#/staffing">Full roster</a></div>
+      <div class="grid-4" style="margin-top:16px">${staff.map(st => {
+        const short = st.assigned < st.required;
+        return `<div class="card" style="${short?"border-color:rgba(245,158,11,.4)":""}"><p class="muted">${esc(st.name)}</p>
+          <p style="font-size:24px;font-weight:600;color:${short?"var(--warn)":"var(--ok)"};margin:6px 0">${st.assigned}/${st.required}</p>
+          <p class="muted">${esc(st.note)}</p></div>`;
+      }).join("")}</div>
+    </section>
+    <section>
+      <p class="kicker">Tier 4 · glance, don’t stare</p>
+      <div class="grid-12" style="margin-top:12px">
+        <div class="card gold" style="grid-column:span 2"><p class="muted">Revenue today</p><p class="gold-num" style="font-size:32px;margin:6px 0">${inrL(today)}</p><p class="muted">Through 4 PM</p></div>
+        <div class="card" style="grid-column:span 2"><p class="muted">Ad fill</p><p style="font-size:32px;font-weight:600;margin:6px 0">${adFill}%</p><a class="btn-link" href="#/ads">Inventory</a></div>
+        <div class="card" style="grid-column:span 8"><p class="muted">Footfall vs expected</p>${barChart(hours,["footfall"],["#3b82f6"])}</div>
+      </div>
+    </section>
+  </div>`;
+}
+
+function screensPage() {
+  return `<div class="stack">
+    <header><h1 class="page">Screen status</h1>
+      <p class="sub">Five auditoriums. Red is already broken. Amber is a prediction — fix it before the late show. Dispatching a technician is low-risk and runs immediately.</p>
+      <p class="muted" style="margin-top:12px">Green healthy · Amber predictive · Red critical</p>
+    </header>
+    <div class="grid-2">${screens.map(s => {
+      const halted = s.runState==="halted";
+      const pred = s.projector==="predictive" && !s.tech;
+      return `<article class="card ${halted?"crit":pred?"warn":""} ${halted?"pulse":""}">
+        <div class="row-between"><div><p class="scr-id ${halted?"crit":""}">Screen ${s.id}</p><p style="font-size:20px;font-weight:600;margin:6px 0 0">${esc(s.film)}</p></div>${pill(s)}</div>
+        ${s.runState==="showing"?`<div class="bar" style="margin-top:16px"><span class="${halted?"crit":""}" style="width:${Math.max(8,s.progress*100)}%"></span></div>
+          <p class="muted" style="margin-top:6px">${s.showStart}–${s.showEnd} · ${s.elapsed} · ${s.remaining} rem</p>`:""}
+        ${s.runState==="turnaround"?`<p style="color:#fde68a;margin-top:16px">House crew inside · next show ${s.nextShow}</p>`:""}
+        <div class="grid-2" style="margin-top:16px">
+          <div class="card" style="padding:12px"><p class="muted">House</p><p style="font-size:20px;font-weight:600;margin:4px 0 0">${s.occupancy}% <span class="muted">· ${Math.round(s.occupancy/100*s.capacity)}/${s.capacity}</span></p></div>
+          <div class="card" style="padding:12px"><p class="muted">Lamp</p><p style="font-size:20px;font-weight:600;margin:4px 0 0;color:${s.projector==="failed"?"var(--crit)":pred?"var(--warn)":"var(--ok)"}">${s.lamp}°C</p></div>
+        </div>
+        <p style="margin-top:16px;padding:12px;border-radius:12px;background:${halted?"rgba(239,68,68,.15)":pred?"rgba(245,158,11,.12)":"rgba(255,255,255,.04)"}">${esc(s.note)}</p>
+        ${(halted||pred)&&!s.tech?`<button class="btn ${halted?"btn-crit":"btn-warn"}" style="width:100%;margin-top:12px;justify-content:center" data-act="dispatch" data-id="${s.id}">Dispatch technician</button>`:""}
+        ${s.tech?`<p style="text-align:center;color:var(--ok);font-weight:500;margin-top:12px">Technician dispatched — logged, no extra approval</p>`:""}
+      </article>`;
+    }).join("")}</div>
+  </div>`;
+}
+
+function pricingList() {
+  const pending = pricing.filter(p => p.decision==="pending");
+  const done = pricing.filter(p => p.decision!=="pending");
+  const row = p => `<a href="#/pricing/${p.id}" class="card gold" style="display:block;margin-bottom:12px">
+    <p class="kicker gold">${p.direction==="surge"?"Surge target":"Stimulate demand"} · Screen ${p.screen}</p>
+    <div class="row-between"><div><p style="font-size:20px;font-weight:600;margin:6px 0">${esc(p.film)} · ${p.dayLabel} ${p.showtime}</p>
+      <p class="muted">${esc(p.factors[0].detail)}</p></div>
+      <div style="text-align:right"><p class="muted" style="text-decoration:line-through">${inr(p.current)}</p>
+      <p class="gold-num" style="font-size:24px">${inr(p.low)}–${inr(p.high)}</p>
+      ${p.decision!=="pending"?`<p style="color:var(--ok);font-size:12px">${p.decision}${p.adjustedTo!=null?" · "+inr(p.adjustedTo):""}</p>`:""}</div></div></a>`;
+  return `<div style="max-width:800px;margin:0 auto">
+    <p class="kicker gold">AI · money</p>
+    <h1 class="page">Pricing</h1>
+    <p class="sub">Ticket prices are never auto-applied. Every suggestion shows a confidence range and the reasons. Accept, adjust inside the band, or reject.</p>
+    <h2 style="margin:28px 0 12px">Waiting on you</h2>
+    ${pending.length?pending.map(row).join(""):`<div class="card" style="text-align:center;padding:40px">Queue is empty. No fare changes pending approval.</div>`}
+    ${done.length?`<h2 style="margin:28px 0 12px">Decided this shift</h2>${done.map(row).join("")}`:""}
+  </div>`;
+}
+
+function pricingDetail(id) {
+  const rec = pricing.find(p => p.id === id);
+  if (!rec) return pricingList();
+  const locked = rec.decision !== "pending";
+  const adjusting = adjustId === rec.id;
+  return `<div style="max-width:720px;margin:0 auto">
+    <a class="btn-link" href="#/pricing">← All recommendations</a>
+    <div class="card gold" style="margin-top:16px;padding:24px">
+      <p class="kicker gold">AI recommendation · requires approval</p>
+      <h1 class="page" style="margin-top:8px">${esc(rec.film)}</h1>
+      <p style="font-size:18px;color:#cbd5e1">Screen ${rec.screen} · ${rec.dayLabel} · ${rec.showtime}</p>
+      <div class="grid-4" style="margin-top:20px;grid-template-columns:repeat(3,1fr)">
+        <div class="card"><p class="muted">Current fare</p><p style="font-size:20px;color:var(--muted)">${inr(rec.current)}</p></div>
+        <div class="card"><p class="muted">Suggested band</p><p class="gold-num" style="font-size:20px">${inr(rec.low)}–${inr(rec.high)}</p></div>
+        <div class="card"><p class="muted">Forecast occupancy</p><p style="font-size:20px">${rec.occ}%</p></div>
+      </div>
+      <div class="card gold" style="margin-top:20px">
+        <p class="gold-num">Confidence range — not a single number</p>
+        <p class="muted" style="margin-top:6px">CineSignal is ${rec.direction==="surge"?"confident demand will hold":"confident a cut will fill seats"} between ${inr(rec.low)} and ${inr(rec.high)}. Midpoint ${inr(rec.mid)} is a starting point, not a mandate.</p>
+        <div class="bar" style="margin-top:12px"><span class="gold" style="width:100%"></span></div>
+        <div class="row-between" style="color:var(--gold-2);font-size:12px;margin-top:4px"><span>${inr(rec.low)}</span><span>${inr(rec.mid)}</span><span>${inr(rec.high)}</span></div>
+      </div>
+      <h2 style="margin:28px 0 0">Why this recommendation</h2>
+      ${rec.factors.map((f,i)=>`<div class="factor"><strong>${i+1}. ${esc(f.label)}</strong><p style="margin:6px 0 0">${esc(f.detail)}</p></div>`).join("")}
+      <div class="note">Pricing has real financial and customer-facing consequences. CineSignal will not change this fare unless you Accept, Adjust, or Reject.</div>
+      ${locked ? `<p style="color:var(--ok);margin-top:20px">Decision recorded: ${rec.decision}${rec.adjustedTo!=null?" at "+inr(rec.adjustedTo):""}. See the operations log.</p>` :
+        adjusting ? `<div class="card gold" style="margin-top:20px"><label>Set fare inside the band (${inr(rec.low)}–${inr(rec.high)})</label>
+          <input type="range" min="${rec.low}" max="${rec.high}" step="5" value="${adjustVal}" id="adjRange" />
+          <p class="gold-num" style="font-size:28px" id="adjLabel">${inr(adjustVal)}</p>
+          <div class="actions"><button class="btn btn-gold" data-act="confirm-adj" data-pid="${rec.id}">Confirm</button>
+          <button class="btn btn-ghost" data-act="cancel-adj">Cancel</button></div></div>` :
+        `<div class="actions">
+          <button class="btn btn-gold" data-act="accept" data-pid="${rec.id}">Accept band</button>
+          <button class="btn btn-gold-out" data-act="adjust" data-pid="${rec.id}">Adjust</button>
+          <button class="btn btn-ghost" data-act="reject" data-pid="${rec.id}">Reject</button>
+        </div>`}
+    </div>
+  </div>`;
+}
+
+function adsPage() {
+  const recSlot = ads.find(a => a.rec);
+  return `<div style="max-width:800px;margin:0 auto" class="stack">
+    <header><h1 class="page">Ad inventory</h1><p class="sub">Lobby loops and the pre-show reel. Moving a creative is customer-facing, so CineSignal only suggests — you accept or reject.</p></header>
+    <div class="grid-2">${ads.map(s => `<div class="card ${s.fill<70?"warn":""}">
+      <p class="muted">${esc(s.kind)}</p><h2 style="margin:4px 0 0">${esc(s.name)}</h2>
+      <p style="font-size:48px;font-weight:600;margin:12px 0 0;color:${s.fill<70?"var(--warn)":"#fff"}">${s.fill}%</p>
+      <p class="muted">${s.booked} of ${s.cap} slots booked</p>
+      <div class="bar" style="margin-top:12px"><span class="${s.fill<70?"warn":""}" style="width:${s.fill}%"></span></div>
+    </div>`).join("")}</div>
+    ${recSlot && recSlot.rec ? `<article class="card gold" style="padding:24px">
+      <p class="kicker gold">AI reallocation · requires approval</p>
+      <h2>${esc(recSlot.rec.summary)}</h2>
+      <p>From ${esc(recSlot.rec.from)} → ${esc(recSlot.rec.to)}. Expected ${esc(recSlot.rec.fillDelta)}.</p>
+      ${recSlot.rec.factors.map((f,i)=>`<div class="factor"><strong>${i+1}. ${esc(f.label)}</strong><p style="margin:6px 0 0">${esc(f.detail)}</p></div>`).join("")}
+      <div class="note">Advertisers and house experience change if this runs. Not auto-applied.</div>
+      ${recSlot.rec.decision==="pending"?`<div class="actions">
+        <button class="btn btn-gold" data-act="ad-ok">Accept reallocation</button>
+        <button class="btn btn-ghost" data-act="ad-no">Reject</button></div>`:
+        `<p style="color:var(--ok);margin-top:16px">Decision recorded: ${recSlot.rec.decision}</p>`}
+    </article>` : ""}
+  </div>`;
+}
+
+function staffingPage() {
+  const gap = staff.find(s => s.assigned < s.required);
+  return `<div class="stack">
+    <header><h1 class="page">Staffing</h1><p class="sub">Coverage against expected footfall. Gaps show up before the rush, not after the queue forms.</p></header>
+    ${gap ? `<div class="card warn"><p class="kicker" style="color:var(--warn)">Warning · known window</p>
+      <p style="font-size:20px;font-weight:600;margin:6px 0">${esc(gap.name)} short ${gap.required-gap.assigned} at ${gap.gapHour}</p>
+      <p class="muted">${esc(gap.note)}</p>
+      <button class="btn btn-warn" style="margin-top:12px" data-act="assign">Assign +1 from usher float</button></div>` :
+      `<div class="empty"><p style="font-weight:600;margin:0">Roster matches the forecast</p><p class="muted">No open coverage gaps for the rest of today.</p></div>`}
+    <div class="grid-4">${staff.map(st => {
+      const short = st.assigned < st.required;
+      return `<div class="card ${short?"warn":""}"><p class="muted">${esc(st.name)}</p>
+        <p style="font-size:32px;font-weight:600;color:${short?"var(--warn)":"var(--ok)"}">${st.assigned}<span class="muted" style="font-size:18px">/${st.required}</span></p>
+        <p class="muted">${esc(st.note)}</p></div>`;
+    }).join("")}</div>
+    <div class="grid-2">
+      <div class="card"><h2>Footfall vs expected</h2><p class="muted">Blue = actual, navy = expected</p>${barChart(hours,["footfall","expected"],["#3b82f6","#24365c"],true)}</div>
+      <div class="card"><h2>Staff on floor vs need</h2><p class="muted">Amber = need, green = on floor</p>${barChart(hours,["staffNeed","staffOn"],["#f59e0b","#22c55e"],true)}</div>
+    </div>
+  </div>`;
+}
+
+function logPage() {
+  const rows = log.filter(e => {
+    if (logFilter.cat!=="all" && e.cat!==logFilter.cat) return false;
+    if (logFilter.sev!=="all" && e.severity!==logFilter.sev) return false;
+    if (logFilter.st!=="all" && e.status!==logFilter.st) return false;
+    if (logFilter.q && !(e.title+" "+e.detail).toLowerCase().includes(logFilter.q.toLowerCase())) return false;
+    return true;
+  });
+  const open = log.filter(e => e.status==="open" || e.status==="in_progress").length;
+  const opt = (v, cur) => `<option value="${v}" ${cur===v?"selected":""}>${v.replace("_"," ")}</option>`;
+  return `<div>
+    <div class="row-between">
+      <div><h1 class="page">Operations log</h1><p class="sub">Human-approved money moves and autonomous low-risk actions. Colour on the left is severity.</p></div>
+      <div style="display:flex;gap:12px"><div class="card" style="padding:8px 16px;text-align:right"><p style="font-size:24px;font-weight:600;color:${open?"var(--crit)":"#fff"};margin:0">${open}</p><p class="muted">Open</p></div>
+      <div class="card" style="padding:8px 16px;text-align:right"><p style="font-size:24px;font-weight:600;margin:0">${log.length}</p><p class="muted">Today</p></div></div>
+    </div>
+    <div class="filters">
+      <input id="logQ" placeholder="Search events…" value="${esc(logFilter.q)}" />
+      <select id="logCat">${["all","equipment","pricing","staffing","ads","ops"].map(v=>opt(v,logFilter.cat)).join("")}</select>
+      <select id="logSev">${["all","critical","warning","info"].map(v=>opt(v,logFilter.sev)).join("")}</select>
+      <select id="logSt">${["all","open","in_progress","resolved"].map(v=>opt(v,logFilter.st)).join("")}</select>
+    </div>
+    ${rows.length===0?`<div class="card" style="text-align:center;padding:48px"><p style="font-weight:600">No events match</p><p class="muted">Clear filters or search another phrase.</p></div>`:
+    `<div class="card" style="padding:0;overflow:hidden">${rows.map(e => `<div class="log-row">
+      <div class="edge ${e.severity}"></div>
+      <div style="flex:1;padding:12px 16px;display:flex;gap:12px;flex-wrap:wrap">
+        <div style="width:80px;color:var(--dim);font-weight:500">${esc(e.ts)}</div>
+        <div style="flex:1;min-width:200px"><strong>${esc(e.title)}</strong><p class="muted" style="margin:4px 0 0">${esc(e.detail)}</p></div>
+        <div style="display:flex;gap:6px;align-items:flex-start;flex-wrap:wrap">
+          ${e.autonomy==="autonomous"?`<span class="tag">${e.status==="resolved"?"Auto-resolved":"Auto"}</span>`:`<span class="tag gold">${e.actor==="ravi"?"Ravi approved":"Needs approval"}</span>`}
+          <span class="tag" style="${e.severity==="critical"?"color:var(--crit);border-color:rgba(239,68,68,.4)":e.severity==="warning"?"color:var(--warn);border-color:rgba(245,158,11,.4)":""}">${e.severity}</span>
+        </div>
+      </div></div>`).join("")}</div>`}
+  </div>`;
+}
+
+function render() {
+  navHtml();
+  const r = route();
+  const app = document.getElementById("app");
+  if (r.page==="screens") app.innerHTML = screensPage();
+  else if (r.page==="pricing" && r.id) app.innerHTML = pricingDetail(r.id);
+  else if (r.page==="pricing") app.innerHTML = pricingList();
+  else if (r.page==="ads") app.innerHTML = adsPage();
+  else if (r.page==="staffing") app.innerHTML = staffingPage();
+  else if (r.page==="log") app.innerHTML = logPage();
+  else app.innerHTML = overview();
+  bind();
+}
+
+function bind() {
+  document.querySelectorAll("[data-act]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const act = btn.getAttribute("data-act");
+      const id = Number(btn.getAttribute("data-id"));
+      const pid = btn.getAttribute("data-pid");
+      if (act==="dispatch") dispatchTech(id);
+      else if (act==="assign") assignStaff();
+      else if (act==="accept") decidePricing(pid, "accepted");
+      else if (act==="reject") decidePricing(pid, "rejected");
+      else if (act==="adjust") { const rec = pricing.find(p=>p.id===pid); adjustId = pid; adjustVal = rec.mid; render(); }
+      else if (act==="cancel-adj") { adjustId = null; render(); }
+      else if (act==="confirm-adj") decidePricing(pid, "accepted", adjustVal);
+      else if (act==="ad-ok") decideAd("accepted");
+      else if (act==="ad-no") decideAd("rejected");
+    });
+  });
+  const adj = document.getElementById("adjRange");
+  if (adj) adj.addEventListener("input", e => {
+    adjustVal = Number(e.target.value);
+    document.getElementById("adjLabel").textContent = inr(adjustVal);
+  });
+  const q = document.getElementById("logQ");
+  if (q) {
+    q.addEventListener("input", e => { logFilter.q = e.target.value; render(); document.getElementById("logQ").focus(); const el=document.getElementById("logQ"); el.setSelectionRange(el.value.length, el.value.length); });
+    document.getElementById("logCat").addEventListener("change", e => { logFilter.cat = e.target.value; render(); });
+    document.getElementById("logSev").addEventListener("change", e => { logFilter.sev = e.target.value; render(); });
+    document.getElementById("logSt").addEventListener("change", e => { logFilter.st = e.target.value; render(); });
+  }
+}
+
+document.getElementById("menuBtn").onclick = () => {
+  document.getElementById("sidebar").classList.add("open");
+  document.getElementById("scrim").classList.add("show");
+};
+document.getElementById("scrim").onclick = () => {
+  document.getElementById("sidebar").classList.remove("open");
+  document.getElementById("scrim").classList.remove("show");
+};
+document.getElementById("emergBtn").onclick = () => { location.hash = "#/screens"; };
+
+window.addEventListener("hashchange", () => { window.scrollTo(0,0); render(); });
+if (!location.hash) location.hash = "#/overview";
+else render();
+</script>
+</body>
+</html>
